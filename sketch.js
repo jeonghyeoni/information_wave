@@ -19,6 +19,12 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  if (height < width) {
+    screenSize = height / 2.5;
+  } 
+  else {
+    screenSize = width / 2.5;
+  }
   //createCanvas(900, 800);
 
   // 사용자 입력을 받는 input 요소
