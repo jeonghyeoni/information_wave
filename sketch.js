@@ -480,7 +480,7 @@ function gameOverCheck(life, score){
     strokeWeight(10);
     fill('red');
     text(`Score: ${score.currentScore}`, width/2, height/2 + 80);
-    text(`Best Score: ${score.currentScore}`, width/2, height/2 + 110);
+    text(`Best Score: ${score.BestScore}`, width/2, height/2 + 110);
     
     replayButton = createButton('play again');
     replayButton.size(80);
