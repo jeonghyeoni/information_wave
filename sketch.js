@@ -4,21 +4,23 @@ let intervalX = 0;
 let intervalY = 0;
 const noiseScale = 0.02; //wave speed
 const fontSize = 18;
-const playerSpeed = 2;
+const playerSpeed = 1.5;
 const playerSize = 10;
 let pFrame = 0;
 let userInput;
-let keyword;
+let keyword = '';
 let searchButton;
 let gameStarted = false;
 let screenSize = 320;
 
 function preload() {
-  roboto = loadFont('Pretendard-Regular.otf');
+  font = loadFont('assets/Pretendard-Regular.otf');
+  tone = loadSound('assets/Tone.mp3');
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  tone.setVolume(0.3);
   
    if (height < width) {
     screenSize = height / 2.5;
@@ -31,11 +33,11 @@ function setup() {
   // 사용자 입력을 받는 input 요소
   userInput = createInput();
   userInput.size(200);
-  userInput.position(width/2 - 100, height/2 + screenSize);
+  userInput.position(width/2 - 125, height/2 + screenSize);
   
   // 버튼을 클릭하면 Wikipedia 내용을 가져와 콘솔에 출력
   const searchButton = createButton('Search');
-  searchButton.position(width/2 + 100, height/2 + screenSize);
+  searchButton.position(width/2 + 75, height/2 + screenSize);
   searchButton.mousePressed(() => {
     keyword = userInput.value();
     gameStarted = false;
@@ -47,7 +49,7 @@ function setup() {
         if(!string){
           string = "Search results do not exist. Please enter another keyword.";
         }
-        wave = new Wave(string, intervalX, intervalY, noiseScale, fontSize);
+        wave = new Wave(keyword, string, intervalX, intervalY, noiseScale, fontSize);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -61,7 +63,7 @@ function setup() {
         if(!string){
           string = "Search results do not exist. Please enter another keyword.";
         }
-        wave = new Wave(string, intervalX, intervalY, noiseScale, fontSize);
+        wave = new Wave(keyword, string, intervalX, intervalY, noiseScale, fontSize);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -74,29 +76,36 @@ function setup() {
   
   rectMode(CENTER);
   player = new Player(width/2, height - 20, playerSize, playerSize, playerSpeed);
-  wave = new Wave(string, intervalX, intervalY, noiseScale, fontSize);
-  
+  wave = new Wave(keyword, string, intervalX, intervalY, noiseScale, fontSize);
+  score = new Score(width/2 - screenSize, height/2 - screenSize - 35, width/2 + screenSize, height/2 - screenSize - 35);  
+  life = new Life(0, 0, width, 8);
+
   background(0);
-  //stroke(255);
-  //fill(255);
-  textFont(roboto);
+  textFont(font);
   textAlign(LEFT, TOP);
   textSize(fontSize);
-  //noLoop();
 }
 
 function draw() {
   background(0);
   fill(0);
   stroke(255);
+  
+  rectMode(CENTER);
   rect(width/2, height/2, screenSize*2, screenSize*2);
 
-  //player.update();
   wave.show();
+  
   fill(0, 255, 255);
-  player.collision(wave);
+  player.update();
+  player.collision(wave, score, life);
   player.show();
   
+  score.update();
+  score.show();
+  life.show();
+  
+  gameOverCheck(life, score);
 }
 
 /*---------------------------------------------------------------------*/
@@ -114,8 +123,6 @@ class Player{
   
   show(){
     noStroke();
-    
-    this.update();
     rect(this.x, this.y, this.w, this.h);    
   }
   
@@ -152,32 +159,71 @@ class Player{
     }
   }
   
-  collision(other){
+  collision(other, scoreSystem, lifeSystem){
     let n;
     let index;
+    let cutScale = 0.05;
     
     for(let i = 0; i < other.arr.length; i++){
       index = i % other.string.length; 
-      let bound = roboto.textBounds(other.string[index], other.arr[i].x, other.arr[i].y, other.size);
+      let bound = font.textBounds(other.string[index], other.arr[i].x, other.arr[i].y, other.size);
       
       if(bound.x<=this.x+this.w && this.x+this.w<=bound.x+bound.w){
         if(bound.y <= this.y && this.y<=bound.y+bound.h){
           pFrame = frameCount;
-          this.debuff(bound, other);
+          lifeSystem.health -= cutScale;
+          if(other.targets.includes(other.arr[i])){
+            if(!other.removed.includes(other.arr[i])){
+              tone.play();
+              other.removed.push(other.arr[i]);
+              scoreSystem.currentScore++;
+            }
+          }
+          else{
+            this.debuff(bound, other);
+          }
         }
         else if(bound.y <= this.y+this.h && this.y+this.h <=bound.y+bound.h){
           pFrame = frameCount;
-          this.debuff(bound, other);
+          lifeSystem.health -= cutScale;
+          if(other.targets.includes(other.arr[i])){
+            if(!other.removed.includes(other.arr[i])){
+              tone.play();
+              other.removed.push(other.arr[i]);
+              scoreSystem.currentScore++;
+            }
+          }
+          else{
+            this.debuff(bound, other);
+          }
         }        
       } 
       else if(this.x<=bound.x+bound.w && this.x >= bound.x){
         if(this.y<=bound.y+bound.h && this.y>=bound.y){
           pFrame = frameCount;
-          this.debuff(bound, other);
+          lifeSystem.health -= cutScale;
+          if(other.targets.includes(other.arr[i])){
+            if(!other.removed.includes(other.arr[i])){
+              tone.play();
+              other.removed.push(other.arr[i]);
+              scoreSystem.currentScore++;
+            }
+          }
+          else{
+            this.debuff(bound, other);
+          }
         }
         else if(this.y+this.h >= bound.y && this.y+this.h <=bound.y+bound.h){
-          pFrame = frameCount;
-          this.debuff(bound, other);
+          if(other.targets.includes(other.arr[i])){
+            if(!other.removed.includes(other.arr[i])){
+              tone.play();
+              other.removed.push(other.arr[i]);
+              scoreSystem.currentScore++;
+            }
+          }
+          else{
+            this.debuff(bound, other);
+          }
         }
       } 
       else if(frameCount - pFrame >= 0.2 * deltaTime){
@@ -202,9 +248,28 @@ class Player{
 } //Player class end
 
 /*---------------------------------------------------------------------*/
+class Life{
+  constructor(x, y, w, h){
+    this.health = 100;
+    this.x = x;
+    this.y = y; 
+    this.w = w;
+    this.h = h;
+  }
+  
+  show(){
+    rectMode(CORNER);
+    noStroke();
+    fill('green');
+    rect(this.x, this.y, this.health/100 * this.w, this.h);
+  }
+}
+
+/*---------------------------------------------------------------------*/
 
 class Wave{
-  constructor(string, intervalX, intervalY, velocity, fontSize){
+  constructor(keyword, string, intervalX, intervalY, velocity, fontSize){
+    this.keyword = keyword;
     this.string = string;
     this.intervalX = intervalX;
     this.intervalY = intervalY;
@@ -213,6 +278,8 @@ class Wave{
     this.arr = [];
     this.wordOrder = [];
     this.index = 0;
+    this.targets = [];
+    this.removed = [];
     
     for (let j = height/2 - screenSize; j < height/2 + screenSize; j += this.intervalY) {
       for (let i = width/2 - screenSize; i < width/2 + screenSize; i += this.intervalX) {
@@ -223,8 +290,12 @@ class Wave{
   
   show(){
     let space = false;
-    let j;
+    let j, k;
+    let target = false;
+    this.targets = [];
     
+    textSize(this.size);
+    textAlign(LEFT, TOP);
     strokeWeight(1);
     stroke(255);
     fill(255);
@@ -232,7 +303,6 @@ class Wave{
     for (let i = 0; i < this.arr.length; i++) {
       this.index = i % this.string.length;
       this.c = this.arr[i];
-      text(this.string[this.index], this.c.x, this.c.y);
       
       if(this.string[this.index] == ' ' || this.index == 0){
         space = true;
@@ -242,7 +312,31 @@ class Wave{
         j++;
       }
       
-      this.bound = roboto.textBounds(this.string[this.index], this.c.x, this.c.y, this.size);
+      this.bound = font.textBounds(this.string[this.index], this.c.x, this.c.y, this.size);
+      
+      for(k = 0; k<this.keyword.length; k++){
+        if(this.string[this.index+k] == this.keyword[k] || this.string[this.index+k] == this.keyword[k].toUpperCase()){
+          target = true;
+        }
+        else{
+          target = false;
+          break;
+        }
+      }
+      
+      if(target){
+        for(k = 0; k<this.keyword.length; k++){
+          this.targets.push(this.arr[i+k]);
+        }
+      }
+      
+      if(this.targets.includes(this.c) && !this.removed.includes(this.c)){
+        fill('yellow');
+      } else{
+        fill(255);
+      }
+      
+      text(this.string[this.index], this.c.x, this.c.y);
       
       if(gameStarted){
         if(!space){
@@ -280,6 +374,36 @@ class Wave{
     let a = TAU * n;
     this.c.x += cos(a);
     this.c.y += sin(a) + sin(0.02 * this.c.x + millis()/300);
+  }
+}
+
+/*---------------------------------------------------------------------*/
+
+class Score{
+  constructor(x, y, bx, by){
+    this.currentScore = 0;
+    this.bestScore = 0;
+    this.x = x;
+    this.y = y;
+    this.bx = bx;
+    this.by = by;
+  }
+  
+  show(){
+    textSize(30);
+    fill('white');
+    textAlign(LEFT, TOP);
+    text(`${this.currentScore}`, this.x, this.y);
+    
+    fill('red');
+    textAlign(RIGHT, TOP);
+    text(`${this.bestScore}`, this.bx, this.by);
+  }
+  
+  update(){
+    if(this.bestScore < this.currentScore){
+      this.bestScore = this.currentScore;
+    }
   }
 }
 
@@ -333,4 +457,40 @@ function isAlnum(text) {
     }
   }
   return true;
+}
+
+function gameOverCheck(life, score){
+  if(life.health <= 0){
+    push();
+    translate(0, -35);
+    noLoop();
+    textAlign(CENTER, CENTER);
+    strokeWeight(40);
+    stroke(0, 150);
+    
+    textSize(100);
+    fill(255);
+    text("GAME OVER", width/2, height/2);
+    
+    textSize(20);
+    strokeWeight(10);
+    fill('red');
+    text(`Score: ${score.currentScore}`, width/2, height/2 + 80);
+    text(`Best Score: ${score.currentScore}`, width/2, height/2 + 110);
+    
+    replayButton = createButton('play again');
+    replayButton.size(80);
+    replayButton.position(width/2 - 40, height/2 + 100);
+    replayButton.mousePressed(() => {
+      life.health = 100;
+      score.currentScore = 0;
+      keyword = '';
+      string = "Please enter a keyword ";
+      wave = new Wave(keyword, string, intervalX, intervalY, noiseScale, fontSize);
+      player = new Player(width/2, height - 20, playerSize, playerSize, playerSpeed);
+      loop();
+      replayButton.remove();
+    });
+    pop();
+  }
 }
