@@ -162,7 +162,7 @@ class Player{
   collision(other, scoreSystem, lifeSystem){
     let n;
     let index;
-    let cutScale = 0.1;
+    let cutScale = 0.02;
     
     for(let i = 0; i < other.arr.length; i++){
       index = i % other.string.length; 
