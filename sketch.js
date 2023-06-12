@@ -294,13 +294,14 @@ class Wave{
     let target = false;
     this.targets = [];
     
+    strokeWeight(1);
     textSize(this.size);
     textAlign(LEFT, TOP);
-    strokeWeight(1);
-    stroke(255);
     fill(255);
     
     for (let i = 0; i < this.arr.length; i++) {
+      stroke(255);
+      
       this.index = i % this.string.length;
       this.c = this.arr[i];
       
@@ -332,6 +333,9 @@ class Wave{
       
       if(this.targets.includes(this.c) && !this.removed.includes(this.c)){
         fill('yellow');
+      } else if(this.removed.includes(this.c)){
+        stroke(0, 0);
+        fill(0, 0);
       } else{
         fill(255);
       }
