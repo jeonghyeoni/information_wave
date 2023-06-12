@@ -22,11 +22,11 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   tone.setVolume(0.3);
   
-   if (height < width) {
+  /* if (height < width) {
     screenSize = height / 2.5;
   } else {
     screenSize = width / 2.5;
-  }
+  } */
   
   fontsize = int(screenSize / 45);
 
@@ -162,7 +162,7 @@ class Player{
   collision(other, scoreSystem, lifeSystem){
     let n;
     let index;
-    let cutScale = 0.05;
+    let cutScale = 0.1;
     
     for(let i = 0; i < other.arr.length; i++){
       index = i % other.string.length; 
@@ -316,7 +316,7 @@ class Wave{
       this.bound = font.textBounds(this.string[this.index], this.c.x, this.c.y, this.size);
       
       for(k = 0; k<this.keyword.length; k++){
-        if(this.string[this.index+k] == this.keyword[k] || this.string[this.index+k] == this.keyword[k].toUpperCase()){
+        if(this.string[this.index+k] == this.keyword[k] || this.string[this.index+k] == this.keyword[k].toUpperCase() || this.string[this.index+k] == this.keyword[k].toLowerCase()){
           target = true;
         }
         else{
@@ -465,9 +465,9 @@ function isAlnum(text) {
 
 function gameOverCheck(life, score){
   if(life.health <= 0){
+    noLoop();
     push();
     translate(0, -35);
-    noLoop();
     textAlign(CENTER, CENTER);
     strokeWeight(40);
     stroke(0, 150);
