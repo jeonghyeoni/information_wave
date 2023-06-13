@@ -1,7 +1,7 @@
 let string = 
     "Please enter a keyword ";
-let intervalX = 0;
-let intervalY = 0;
+let intervalX = 15;
+let intervalY = 80;
 const noiseScale = 0.02; //wave speed
 const fontSize = 18;
 const playerSpeed = 1.5;
@@ -21,6 +21,14 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   tone.setVolume(0.3);
+  
+  slider = createSlider(40, 100, intervalY);
+  slider.position(width/2-screenSize - 100 - 20, height/2 - screenSize + 20);
+  slider.style('width', '100px');
+  slider.input(() => {
+    intervalY = slider.value();
+    wave = new Wave(keyword, string, intervalX, intervalY, noiseScale, fontSize);
+  });
   
   /* if (height < width) {
     screenSize = height / 2.5;
@@ -70,9 +78,6 @@ function setup() {
       });                    
     }
   }); /*searchButton Pressed*/
-
-  intervalX = 15;
-  intervalY = 40;
   
   rectMode(CENTER);
   player = new Player(width/2, height - 20, playerSize, playerSize, playerSpeed);
@@ -93,6 +98,19 @@ function draw() {
   
   rectMode(CENTER);
   rect(width/2, height/2, screenSize*2, screenSize*2);
+  
+  push();
+    translate(width/2-screenSize - 100 - 20, height/2 - screenSize + 20);
+    
+    textAlign(CENTER, CENTER);
+    fill(255);
+    textSize(15);
+    text("line spacing", 52, -15);
+
+    rectMode(CORNER);
+    fill(255, 100);
+    rect(-4, 0, 112, 16, 20);
+  pop();
 
   wave.show();
   
