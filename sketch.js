@@ -20,6 +20,7 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   tone.setVolume(0.3);
+  screenSize = min(windowWidth, windowHeight)/3;
 
   // IntervalY(줄간격) 값 조정하는 슬라이더 생성
   slider = createSlider(40, 110, intervalY);
